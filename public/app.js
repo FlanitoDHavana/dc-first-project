@@ -28,7 +28,6 @@
 
       osc.type = 'sine';
       const now = this.ctx.currentTime;
-      // Quick cheerful click frequency pop
       osc.frequency.setValueAtTime(320 + Math.random() * 80, now);
       osc.frequency.exponentialRampToValueAtTime(700, now + 0.08);
 
@@ -66,6 +65,29 @@
         osc.stop(now + idx * 0.05 + 0.2);
       });
     }
+
+    playFail() {
+      if (!this.enabled) return;
+      this.init();
+      if (!this.ctx) return;
+
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(260, now);
+      osc.frequency.linearRampToValueAtTime(180, now + 0.25);
+
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.25);
+    }
   }
 
   const sfx = new SoundFX();
@@ -74,6 +96,7 @@
   const BUILDINGS_DEF = [
     {
       id: 'coffee',
+      tier: 1,
       name: 'Brody Café Drip Coffee',
       desc: 'Keeps your eyes open during morning 8 AM lectures.',
       baseCost: 20,
@@ -82,6 +105,7 @@
     },
     {
       id: 'flashcards',
+      tier: 1,
       name: 'Anki Flashcard Deck',
       desc: 'Spaced repetition algorithms maximize memory retention.',
       baseCost: 140,
@@ -90,6 +114,7 @@
     },
     {
       id: 'ta',
+      tier: 2,
       name: 'TA Office Hours',
       desc: 'Get unblocked on that brutal organic chemistry problem set.',
       baseCost: 1500,
@@ -98,6 +123,7 @@
     },
     {
       id: 'studyGroup',
+      tier: 2,
       name: 'Brody Atrium Study Group',
       desc: 'Collaborative all-nighters fueled by energy drinks and shared panic.',
       baseCost: 16000,
@@ -106,6 +132,7 @@
     },
     {
       id: 'stacks',
+      tier: 3,
       name: 'MSE Stacks Deep Dive',
       desc: 'Silence so absolute on B-Level that learning happens by osmosis.',
       baseCost: 180000,
@@ -114,6 +141,7 @@
     },
     {
       id: 'gilman',
+      tier: 3,
       name: 'Gilman Bell Tower Focus',
       desc: 'The historic chime of Gilman inspires peak academic performance.',
       baseCost: 2000000,
@@ -122,6 +150,7 @@
     },
     {
       id: 'lab',
+      tier: 3,
       name: 'Bloomberg Lab Grant',
       desc: 'State-of-the-art public health laboratory infrastructure.',
       baseCost: 28000000,
@@ -130,6 +159,7 @@
     },
     {
       id: 'laureate',
+      tier: 3,
       name: 'Nobel Laureate Mentorship',
       desc: '1-on-1 guidance from world-renowned Hopkins faculty.',
       baseCost: 450000000,
@@ -141,6 +171,7 @@
   const UPGRADES_DEF = [
     {
       id: 'pens',
+      tier: 1,
       name: 'PaperMate InkJoy Gel Pens',
       desc: 'Silky-smooth 0.7mm gel ink. Double your clicking knowledge.',
       cost: 150,
@@ -149,6 +180,7 @@
     },
     {
       id: 'highlighters',
+      tier: 1,
       name: 'Color Highlighters',
       desc: 'Neon visual clarity. Double your clicking knowledge.',
       cost: 800,
@@ -157,6 +189,7 @@
     },
     {
       id: 'birdInHand',
+      tier: 1,
       name: 'Bird in Hand Espresso',
       desc: 'Boosts Brody Café output by 2x.',
       cost: 2200,
@@ -165,6 +198,7 @@
     },
     {
       id: 'ffc',
+      tier: 2,
       name: 'FFC Unlimited Swipes',
       desc: 'Fresh Food Cafe endless pasta and waffle bar powers late night cramming. +50% total KPS.',
       cost: 6000,
@@ -173,6 +207,7 @@
     },
     {
       id: 'ergonomicChair',
+      tier: 2,
       name: 'Brody Pod Chair',
       desc: 'Comfortable focus. Double your clicking knowledge.',
       cost: 12000,
@@ -181,6 +216,7 @@
     },
     {
       id: 'levering',
+      tier: 2,
       name: 'Levering Peach Tea Rush',
       desc: 'A cold peach tea from Levering Lounge keeps the mind sharp. Double your clicking knowledge.',
       cost: 25000,
@@ -189,6 +225,7 @@
     },
     {
       id: 'crabSpirit',
+      tier: 2,
       name: 'Maryland Crab Spirit',
       desc: 'Pure Baltimore energy. Double clicking knowledge.',
       cost: 60000,
@@ -197,6 +234,7 @@
     },
     {
       id: 'stuce',
+      tier: 3,
       name: 'Stuce Midnight Hangout',
       desc: 'Decompress and collaborate with friends at the Student Center. Multiplies total KPS by 2x.',
       cost: 150000,
@@ -205,6 +243,7 @@
     },
     {
       id: 'laxStick',
+      tier: 3,
       name: 'D1 Championship Lacrosse Stick',
       desc: 'Blue Jay championship mentality. Double total KPS.',
       cost: 400000,
@@ -226,24 +265,148 @@
     '"Your Blue Jay pride is accelerating your brainpower!"'
   ];
 
-  // --- STATE ---
-  let state = {
-    knowledge: 0,
-    totalKnowledge: 0,
-    totalClicks: 0,
-    startTime: Date.now(),
-    clickMultiplier: 1,
-    kpsMultiplier: 1,
-    buildingMultipliers: {},
-    buildings: {},
-    upgradesPurchased: []
-  };
+  // --- STATE TEMPLATE ---
+  function createFreshGameState() {
+    const s = {
+      knowledge: 0,
+      totalKnowledge: 0,
+      totalClicks: 0,
+      startTime: Date.now(),
+      clickMultiplier: 1,
+      kpsMultiplier: 1,
+      buildingMultipliers: {},
+      buildings: {},
+      upgradesPurchased: []
+    };
+    BUILDINGS_DEF.forEach(b => {
+      s.buildings[b.id] = 0;
+      s.buildingMultipliers[b.id] = 1;
+    });
+    return s;
+  }
 
-  // Initialize building counts
-  BUILDINGS_DEF.forEach(b => {
-    state.buildings[b.id] = 0;
-    state.buildingMultipliers[b.id] = 1;
-  });
+  let state = createFreshGameState();
+
+  // --- STUDY SESSIONS STORAGE ---
+  const SESSIONS_STORAGE_KEY = 'jhu_cram_sessions_list_v2';
+  const ACTIVE_SESSION_KEY = 'jhu_cram_active_session_id_v2';
+
+  let sessions = [];
+  let currentSession = null;
+
+  function saveCurrentSession() {
+    if (!currentSession) return;
+    currentSession.lastPlayed = Date.now();
+    currentSession.state = JSON.parse(JSON.stringify(state));
+
+    const idx = sessions.findIndex(s => s.id === currentSession.id);
+    if (idx !== -1) {
+      sessions[idx] = currentSession;
+    } else {
+      sessions.unshift(currentSession);
+    }
+
+    try {
+      localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
+      localStorage.setItem(ACTIVE_SESSION_KEY, currentSession.id);
+    } catch (e) {
+      console.warn('Failed to save sessions:', e);
+    }
+  }
+
+  function loadSessions() {
+    try {
+      const raw = localStorage.getItem(SESSIONS_STORAGE_KEY);
+      sessions = raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      sessions = [];
+    }
+
+    const activeId = localStorage.getItem(ACTIVE_SESSION_KEY);
+    let sessionToLoad = null;
+
+    if (activeId && sessions.length > 0) {
+      sessionToLoad = sessions.find(s => s.id === activeId);
+    }
+
+    if (!sessionToLoad && sessions.length > 0) {
+      sessionToLoad = sessions[0];
+    }
+
+    if (sessionToLoad) {
+      loadSession(sessionToLoad);
+    } else {
+      // First time user with zero sessions: Open topics modal with empty state!
+      openTopicsModal(true);
+    }
+  }
+
+  function loadSession(session) {
+    currentSession = session;
+    state = JSON.parse(JSON.stringify(session.state));
+
+    // Ensure all building keys exist
+    BUILDINGS_DEF.forEach(b => {
+      if (typeof state.buildings[b.id] !== 'number') state.buildings[b.id] = 0;
+      if (typeof state.buildingMultipliers[b.id] !== 'number') state.buildingMultipliers[b.id] = 1;
+    });
+
+    // Re-apply upgrade effects from scratch
+    state.clickMultiplier = 1;
+    state.kpsMultiplier = 1;
+    BUILDINGS_DEF.forEach(b => {
+      state.buildingMultipliers[b.id] = 1;
+    });
+    (state.upgradesPurchased || []).forEach(upgId => {
+      const upg = UPGRADES_DEF.find(u => u.id === upgId);
+      if (upg) upg.effect(state);
+    });
+
+    // Update active topic badge in top-nav
+    if (currentTopicDisplay) {
+      currentTopicDisplay.textContent = session.topicName;
+    }
+
+    closeTopicsModal();
+    if (typeof closeTopicPopup === 'function') closeTopicPopup();
+    renderBuildings();
+    renderUpgrades();
+    renderOrbitIndicators();
+    updateDisplay();
+    saveCurrentSession();
+  }
+
+  function deleteSession(sessionId, e) {
+    if (e) e.stopPropagation();
+    const sessionToDelete = sessions.find(s => s.id === sessionId);
+    if (!sessionToDelete) return;
+
+    if (confirm(`Are you sure you want to delete the study session for "${sessionToDelete.topicName}"?`)) {
+      sessions = sessions.filter(s => s.id !== sessionId);
+      try {
+        localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
+      } catch (err) {}
+
+      if (currentSession && currentSession.id === sessionId) {
+        if (sessions.length > 0) {
+          loadSession(sessions[0]);
+        } else {
+          currentSession = null;
+          state = createFreshGameState();
+          if (currentTopicDisplay) currentTopicDisplay.textContent = 'No Topic Selected';
+          if (typeof closeTopicPopup === 'function') closeTopicPopup();
+          updateDisplay();
+          renderBuildings();
+          renderUpgrades();
+          renderOrbitIndicators();
+          openTopicsModal(true);
+        }
+      } else {
+        renderTopicsList();
+        if (typeof renderTopicPopupMenu === 'function') renderTopicPopupMenu();
+      }
+    }
+  }
 
   // --- HELPERS ---
   function formatNumber(num) {
@@ -255,7 +418,6 @@
   }
 
   function getBuildingCost(buildingDef, currentCount) {
-    // 1.18 cost growth factor for smoother, more deliberate progression pacing
     return Math.floor(buildingDef.baseCost * Math.pow(1.18, currentCount));
   }
 
@@ -271,46 +433,6 @@
 
   function getClickPower() {
     return 1 * state.clickMultiplier;
-  }
-
-  // --- STORAGE ---
-  const STORAGE_KEY = 'jhu_cram_clicker_save';
-
-  function saveGame() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (e) {
-      console.warn('Could not save game:', e);
-    }
-  }
-
-  function loadGame() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        state = { ...state, ...parsed };
-        // Re-apply upgrade effects
-        state.clickMultiplier = 1;
-        state.kpsMultiplier = 1;
-        BUILDINGS_DEF.forEach(b => {
-          state.buildingMultipliers[b.id] = 1;
-        });
-        state.upgradesPurchased.forEach(upgId => {
-          const upg = UPGRADES_DEF.find(u => u.id === upgId);
-          if (upg) upg.effect(state);
-        });
-      }
-    } catch (e) {
-      console.warn('Could not load game save:', e);
-    }
-  }
-
-  function resetGame() {
-    if (confirm('Are you sure you want to reset all your Cram Clicker study progress?')) {
-      localStorage.removeItem(STORAGE_KEY);
-      location.reload();
-    }
   }
 
   // --- DOM ELEMENTS ---
@@ -330,6 +452,50 @@
   const closeStatsBtn = document.getElementById('closeStatsBtn');
   const upgradesOrbit = document.getElementById('upgradesOrbit');
 
+  // Topic & Session DOM
+  const currentTopicDisplay = document.getElementById('currentTopicDisplay');
+  const switchTopicBtn = document.getElementById('switchTopicBtn');
+  const activeTopicBadge = document.getElementById('activeTopicBadge');
+  const topicSwitcherContainer = document.getElementById('topicSwitcherContainer');
+  const topicPopupMenu = document.getElementById('topicPopupMenu');
+  const popupSessionsList = document.getElementById('popupSessionsList');
+  const popupSessionCountBadge = document.getElementById('popupSessionCountBadge');
+  const popupNewTopicBtn = document.getElementById('popupNewTopicBtn');
+  const topicsModal = document.getElementById('topicsModal');
+  const closeTopicsBtn = document.getElementById('closeTopicsBtn');
+  const topicsListView = document.getElementById('topicsListView');
+  const topicsEmptyState = document.getElementById('topicsEmptyState');
+  const topicsPopulatedState = document.getElementById('topicsPopulatedState');
+  const sessionsGrid = document.getElementById('sessionsGrid');
+  const newTopicFromEmptyBtn = document.getElementById('newTopicFromEmptyBtn');
+  const newTopicBtn = document.getElementById('newTopicBtn');
+  const topicCreateView = document.getElementById('topicCreateView');
+  const createTopicForm = document.getElementById('createTopicForm');
+  const topicNameInput = document.getElementById('topicNameInput');
+  const topicScopeInput = document.getElementById('topicScopeInput');
+  const topicDifficultyInput = document.getElementById('topicDifficultyInput');
+  const cancelCreateTopicBtn = document.getElementById('cancelCreateTopicBtn');
+  const topicsSessionCountBadge = document.getElementById('topicsSessionCountBadge');
+
+  // Quiz Checkpoint DOM
+  const quizModal = document.getElementById('quizModal');
+  const closeQuizBtn = document.getElementById('closeQuizBtn');
+  const quizTierBadge = document.getElementById('quizTierBadge');
+  const quizUpgradeIcon = document.getElementById('quizUpgradeIcon');
+  const quizUpgradeTitle = document.getElementById('quizUpgradeTitle');
+  const quizUpgradeCost = document.getElementById('quizUpgradeCost');
+  const quizTopicName = document.getElementById('quizTopicName');
+  const quizScopeText = document.getElementById('quizScopeText');
+  const quizLoading = document.getElementById('quizLoading');
+  const quizQuestionContent = document.getElementById('quizQuestionContent');
+  const quizQuestionPrompt = document.getElementById('quizQuestionPrompt');
+  const quizOptionsGrid = document.getElementById('quizOptionsGrid');
+  const quizFeedbackBox = document.getElementById('quizFeedbackBox');
+  const feedbackIcon = document.getElementById('feedbackIcon');
+  const feedbackTitle = document.getElementById('feedbackTitle');
+  const feedbackExplanation = document.getElementById('feedbackExplanation');
+  const quizActionBtn = document.getElementById('quizActionBtn');
+
   // Stats DOM
   const statTotalEarned = document.getElementById('statTotalEarned');
   const statTotalClicks = document.getElementById('statTotalClicks');
@@ -337,13 +503,405 @@
   const statHelpersOwned = document.getElementById('statHelpersOwned');
   const achievementsList = document.getElementById('achievementsList');
 
+  // --- TOPIC POP-UP DROPDOWN MENU ---
+  function toggleTopicPopup(force) {
+    if (!topicPopupMenu) return;
+    const isClosed = topicPopupMenu.classList.contains('hidden');
+    const shouldOpen = typeof force === 'boolean' ? force : isClosed;
+
+    if (shouldOpen) {
+      renderTopicPopupMenu();
+      topicPopupMenu.classList.remove('hidden');
+      topicSwitcherContainer?.classList.add('open');
+      if (switchTopicBtn) switchTopicBtn.setAttribute('aria-expanded', 'true');
+    } else {
+      closeTopicPopup();
+    }
+  }
+
+  function closeTopicPopup() {
+    if (!topicPopupMenu) return;
+    topicPopupMenu.classList.add('hidden');
+    topicSwitcherContainer?.classList.remove('open');
+    if (switchTopicBtn) switchTopicBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  function renderTopicPopupMenu() {
+    if (!popupSessionsList) return;
+    popupSessionCountBadge.textContent = `${sessions.length} Topic${sessions.length === 1 ? '' : 's'}`;
+    popupSessionsList.innerHTML = '';
+
+    if (sessions.length === 0) {
+      popupSessionsList.innerHTML = `
+        <div class="popup-empty">
+          <p>No past study topics found.</p>
+        </div>
+      `;
+      return;
+    }
+
+    sessions.forEach(sess => {
+      const isActive = currentSession && currentSession.id === sess.id;
+      const totalKnowledge = Math.floor(sess.state?.totalKnowledge || 0);
+      const upgradesCount = (sess.state?.upgradesPurchased || []).length;
+      const helpersCount = Object.values(sess.state?.buildings || {}).reduce((a, b) => a + b, 0);
+
+      const item = document.createElement('div');
+      item.className = `popup-item ${isActive ? 'active' : ''}`;
+      item.innerHTML = `
+        <div class="popup-item-info">
+          <div class="popup-item-name-row">
+            <span class="popup-item-name" title="${sess.topicName}">${sess.topicName}</span>
+            ${isActive ? '<span class="active-pill">Active</span>' : ''}
+          </div>
+          <div class="popup-item-scope" title="${sess.scope}">🎯 ${sess.scope}</div>
+          <div class="popup-item-meta">
+            <span>⚡ ${formatNumber(totalKnowledge)}</span>
+            <span>🧩 ${upgradesCount}/9 upgrades</span>
+            <span>🏛️ ${helpersCount} aids</span>
+          </div>
+        </div>
+        <button class="popup-item-del-btn" title="Delete Session" type="button">🗑️</button>
+      `;
+
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('.popup-item-del-btn')) return;
+        loadSession(sess);
+        closeTopicPopup();
+      });
+
+      item.querySelector('.popup-item-del-btn').addEventListener('click', (e) => {
+        deleteSession(sess.id, e);
+      });
+
+      popupSessionsList.appendChild(item);
+    });
+  }
+
+  // --- TOPICS & SESSIONS MODAL LOGIC ---
+  function openTopicsModal(isFirstTime = false) {
+    closeTopicPopup();
+    topicsModal.classList.remove('hidden');
+    topicsSessionCountBadge.textContent = `${sessions.length} Session${sessions.length === 1 ? '' : 's'}`;
+
+    if (isFirstTime && sessions.length === 0) {
+      closeTopicsBtn.style.display = 'none'; // Must create topic first
+    } else {
+      closeTopicsBtn.style.display = 'block';
+    }
+
+    showTopicsList();
+  }
+
+  function closeTopicsModal() {
+    if (sessions.length === 0 && !currentSession) return; // Prevent closing if no topic set
+    topicsModal.classList.add('hidden');
+  }
+
+  function showTopicsList() {
+    topicsListView.classList.remove('hidden');
+    topicCreateView.classList.add('hidden');
+    renderTopicsList();
+  }
+
+  function showCreateTopicForm() {
+    topicsListView.classList.add('hidden');
+    topicCreateView.classList.remove('hidden');
+    topicNameInput.value = '';
+    topicScopeInput.value = '';
+    topicDifficultyInput.value = '';
+    topicNameInput.focus();
+  }
+
+  function renderTopicsList() {
+    topicsSessionCountBadge.textContent = `${sessions.length} Session${sessions.length === 1 ? '' : 's'}`;
+
+    if (sessions.length === 0) {
+      topicsEmptyState.classList.remove('hidden');
+      topicsPopulatedState.classList.add('hidden');
+    } else {
+      topicsEmptyState.classList.add('hidden');
+      topicsPopulatedState.classList.remove('hidden');
+      sessionsGrid.innerHTML = '';
+
+      sessions.forEach(sess => {
+        const isActive = currentSession && currentSession.id === sess.id;
+        const totalKnowledge = Math.floor(sess.state?.totalKnowledge || 0);
+        const helpersCount = Object.values(sess.state?.buildings || {}).reduce((a, b) => a + b, 0);
+        const upgradesCount = (sess.state?.upgradesPurchased || []).length;
+        const dateStr = new Date(sess.lastPlayed || sess.created).toLocaleDateString();
+
+        const card = document.createElement('div');
+        card.className = `session-card ${isActive ? 'active-session' : ''}`;
+
+        card.innerHTML = `
+          <div class="session-card-info">
+            <div class="session-card-title">
+              <span>${sess.topicName}</span>
+              ${isActive ? '<span class="active-pill">Active</span>' : ''}
+            </div>
+            <div class="session-card-scope" title="${sess.scope}">
+              🎯 ${sess.scope}
+            </div>
+            <div class="session-card-meta">
+              <span>⚡ ${formatNumber(totalKnowledge)} knowledge</span>
+              <span>🧩 ${upgradesCount}/9 upgrades</span>
+              <span>🏛️ ${helpersCount} study aids</span>
+              <span>📅 ${dateStr}</span>
+            </div>
+          </div>
+          <div class="session-card-actions">
+            <button class="btn btn-primary btn-sm resume-btn">
+              ${isActive ? 'Continue' : 'Resume'}
+            </button>
+            <button class="btn-icon-danger delete-btn" title="Delete Session">🗑️</button>
+          </div>
+        `;
+
+        card.querySelector('.resume-btn').addEventListener('click', () => loadSession(sess));
+        card.querySelector('.delete-btn').addEventListener('click', (e) => deleteSession(sess.id, e));
+        sessionsGrid.appendChild(card);
+      });
+    }
+  }
+
+  newTopicFromEmptyBtn.addEventListener('click', showCreateTopicForm);
+  newTopicBtn.addEventListener('click', showCreateTopicForm);
+  cancelCreateTopicBtn.addEventListener('click', () => {
+    if (currentSession) {
+      closeTopicsModal();
+    } else {
+      showTopicsList();
+    }
+  });
+
+  createTopicForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const topicName = topicNameInput.value.trim();
+    const scope = topicScopeInput.value.trim();
+    const difficultyBounds = topicDifficultyInput.value.trim();
+
+    if (!topicName || !scope || !difficultyBounds) return;
+
+    const newSession = {
+      id: 'session_' + Date.now(),
+      topicName,
+      scope,
+      difficultyBounds,
+      created: Date.now(),
+      lastPlayed: Date.now(),
+      state: createFreshGameState()
+    };
+
+    sessions.unshift(newSession);
+    loadSession(newSession);
+    closeTopicPopup();
+  });
+
+  switchTopicBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleTopicPopup();
+  });
+
+  if (activeTopicBadge) {
+    activeTopicBadge.addEventListener('click', (e) => {
+      if (e.target.closest('#switchTopicBtn')) return;
+      toggleTopicPopup();
+    });
+  }
+
+  popupNewTopicBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeTopicPopup();
+    openTopicsModal(false);
+    showCreateTopicForm();
+  });
+
+  closeTopicsBtn.addEventListener('click', closeTopicsModal);
+
+  topicsModal.addEventListener('click', (e) => {
+    if (e.target === topicsModal && currentSession) {
+      closeTopicsModal();
+    }
+  });
+
+  // Close popup menu on outside click
+  document.addEventListener('click', (e) => {
+    if (topicSwitcherContainer && !topicSwitcherContainer.contains(e.target)) {
+      closeTopicPopup();
+    }
+  });
+
+  // Close popup menu on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeTopicPopup();
+    }
+  });
+
+  // --- EXAM CHECKPOINT QUIZ GATE (AUTOCLICKERS & UPGRADES) ---
+  let pendingItem = null;
+  let currentQuestion = null;
+
+  async function openQuizGate(item) {
+    pendingItem = item;
+    currentQuestion = null;
+
+    quizModal.classList.remove('hidden');
+    quizUpgradeIcon.textContent = item.def.icon;
+    quizUpgradeTitle.textContent = item.def.name;
+    quizUpgradeCost.textContent = `Cost: ${formatNumber(item.cost)} knowledge`;
+
+    const tier = item.def.tier || item.tier || 1;
+    quizTierBadge.className = `quiz-tier-badge tier-${tier}`;
+    quizTierBadge.textContent = tier === 1 ? 'Tier 1: Fundamentals' : tier === 2 ? 'Tier 2: Application' : 'Tier 3: Mastery';
+
+    quizTopicName.textContent = currentSession ? currentSession.topicName : 'General Study';
+    quizScopeText.textContent = currentSession ? currentSession.scope : 'General curriculum';
+
+    // Show loading spinner
+    quizLoading.classList.remove('hidden');
+    quizQuestionContent.classList.add('hidden');
+    quizFeedbackBox.classList.add('hidden');
+
+    try {
+      const res = await fetch('/api/generate-question', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topicName: currentSession?.topicName || 'Academic Subject',
+          scope: currentSession?.scope || 'Core concepts',
+          difficultyBounds: currentSession?.difficultyBounds || 'College undergraduate',
+          tier: tier,
+          upgradeName: item.def.name
+        })
+      });
+
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      const data = await res.json();
+      currentQuestion = data;
+      renderQuizQuestion(data);
+    } catch (err) {
+      console.warn('Question API failed, using fallback question:', err);
+      const fallback = {
+        question: `Exam Checkpoint for ${currentSession?.topicName || 'your topic'}: Which method most effectively solidifies your understanding of ${currentSession?.scope?.slice(0, 35) || 'key topics'}?`,
+        options: [
+          'Active recall and solving representative mechanism problems',
+          'Passively re-reading textbook chapters without notes',
+          'Memorizing raw answer keys without understanding concepts',
+          'Skipping practice questions until the final exam'
+        ],
+        correctIndex: 0,
+        explanation: 'Active recall and conceptual problem solving systematically strengthen synaptic pathways and ensure exam readiness.'
+      };
+      currentQuestion = fallback;
+      renderQuizQuestion(fallback);
+    }
+  }
+
+  function renderQuizQuestion(data) {
+    quizLoading.classList.add('hidden');
+    quizQuestionContent.classList.remove('hidden');
+    quizFeedbackBox.classList.add('hidden');
+
+    quizQuestionPrompt.textContent = data.question;
+    quizOptionsGrid.innerHTML = '';
+
+    data.options.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-option-btn';
+      btn.innerHTML = `
+        <span class="option-letter">${String.fromCharCode(65 + idx)}</span>
+        <span>${opt}</span>
+      `;
+      btn.addEventListener('click', () => handleQuizAnswer(idx, data));
+      quizOptionsGrid.appendChild(btn);
+    });
+  }
+
+  function handleQuizAnswer(selectedIdx, data) {
+    const isCorrect = selectedIdx === data.correctIndex;
+    const optionBtns = quizOptionsGrid.querySelectorAll('.quiz-option-btn');
+
+    optionBtns.forEach((btn, idx) => {
+      btn.disabled = true;
+      if (idx === data.correctIndex) {
+        btn.classList.add('selected-correct');
+      } else if (idx === selectedIdx && !isCorrect) {
+        btn.classList.add('selected-incorrect');
+      }
+    });
+
+    quizFeedbackBox.classList.remove('hidden');
+
+    if (isCorrect) {
+      sfx.playBuy();
+      quizFeedbackBox.className = 'quiz-feedback-box feedback-success';
+      feedbackIcon.textContent = '🎉';
+      feedbackTitle.textContent = 'Checkpoint Passed! Correct!';
+      feedbackExplanation.textContent = data.explanation || 'Great job! Your knowledge unlocked this academic aid.';
+      quizActionBtn.textContent = `Unlock ${pendingItem ? pendingItem.def.name : 'Upgrade'}`;
+
+      quizActionBtn.onclick = () => {
+        if (!pendingItem) return;
+
+        if (pendingItem.type === 'building') {
+          const b = pendingItem.def;
+          const count = state.buildings[b.id] || 0;
+          if (state.knowledge >= pendingItem.cost) {
+            state.knowledge -= pendingItem.cost;
+          }
+          state.buildings[b.id] = count + 1;
+        } else if (pendingItem.type === 'upgrade') {
+          const upg = pendingItem.def;
+          if (!state.upgradesPurchased.includes(upg.id)) {
+            state.upgradesPurchased.push(upg.id);
+            upg.effect(state);
+          }
+          if (state.knowledge >= pendingItem.cost) {
+            state.knowledge -= pendingItem.cost;
+          }
+        }
+
+        sfx.playBuy();
+        closeQuizGateModal();
+        updateDisplay();
+        renderUpgrades();
+        renderBuildings();
+        renderOrbitIndicators();
+        saveCurrentSession();
+      };
+    } else {
+      sfx.playFail();
+      quizFeedbackBox.className = 'quiz-feedback-box feedback-error';
+      feedbackIcon.textContent = '❌';
+      feedbackTitle.textContent = 'Not Quite. Knowledge Retained.';
+      feedbackExplanation.textContent = `${data.explanation || 'Review this concept in your notes.'} Keep cramming knowledge and retry!`;
+      quizActionBtn.textContent = 'Review & Close';
+
+      quizActionBtn.onclick = () => {
+        closeQuizGateModal();
+      };
+    }
+  }
+
+  function closeQuizGateModal() {
+    quizModal.classList.add('hidden');
+    pendingItem = null;
+    currentQuestion = null;
+  }
+
+  closeQuizBtn.addEventListener('click', closeQuizGateModal);
+  quizModal.addEventListener('click', (e) => {
+    if (e.target === quizModal) closeQuizGateModal();
+  });
+
   // --- FLOATING CLICK EFFECT ---
   function spawnFloatingNumber(x, y, value) {
     const el = document.createElement('div');
     el.className = 'float-number';
     el.textContent = `+${formatNumber(value)}`;
 
-    // Calculate relative coordinates inside mascot container
     const rect = mascotBtn.getBoundingClientRect();
     const relX = x ? (x - rect.left) : (rect.width / 2);
     const relY = y ? (y - rect.top) : (rect.height / 2);
@@ -404,33 +962,65 @@
     });
   }
 
+  function showToastHint(msg) {
+    let toast = document.getElementById('gameToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'gameToast';
+      toast.className = 'game-toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.classList.remove('hidden', 'show');
+    void toast.offsetWidth;
+    toast.classList.add('show');
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3200);
+  }
+
   function buyBuilding(b) {
     const count = state.buildings[b.id] || 0;
     const cost = getBuildingCost(b, count);
-    if (state.knowledge >= cost) {
-      state.knowledge -= cost;
-      state.buildings[b.id] = count + 1;
-      sfx.playBuy();
-      updateDisplay();
-      renderBuildings();
-      renderOrbitIndicators();
-      saveGame();
+
+    if (state.knowledge < cost) {
+      showToastHint(`You need ${formatNumber(cost)} knowledge to take the checkpoint for ${b.name}! (You have ${formatNumber(Math.floor(state.knowledge))})`);
+      const card = document.getElementById(`building-${b.id}`);
+      if (card) {
+        card.classList.remove('shake-card');
+        void card.offsetWidth;
+        card.classList.add('shake-card');
+      }
+      sfx.playFail();
+      return;
     }
+
+    // Trigger the Quiz Gate Checkpoint for this autoclicker!
+    openQuizGate({
+      type: 'building',
+      def: b,
+      cost: cost,
+      tier: b.tier || 1
+    });
   }
 
   function renderUpgrades() {
     upgradesShelf.innerHTML = '';
     UPGRADES_DEF.forEach(upg => {
-      const isPurchased = state.upgradesPurchased.includes(upg.id);
-      if (isPurchased) return; // Hide purchased upgrades
+      const isPurchased = (state.upgradesPurchased || []).includes(upg.id);
+      if (isPurchased) return;
 
-      const canAfford = state.knowledge >= upg.cost;
+      const tier = upg.tier || 1;
+      const tierLabel = tier === 1 ? 'Tier 1' : tier === 2 ? 'Tier 2' : 'Tier 3';
+
       const card = document.createElement('div');
-      card.className = `upgrade-card ${!canAfford ? 'locked' : ''}`;
-      card.title = `${upg.name} (${formatNumber(upg.cost)} knowledge)\n${upg.desc}`;
+      card.className = `upgrade-card tier-${tier}`;
+      card.title = `${upg.name} (${tierLabel} Exam Checkpoint)\n${upg.desc}\nClick to answer exam checkpoint question and unlock!`;
 
       card.innerHTML = `
         <span class="upg-icon">${upg.icon}</span>
+        <span class="tier-indicator">T${tier}</span>
       `;
 
       card.addEventListener('click', () => buyUpgrade(upg));
@@ -443,19 +1033,18 @@
   }
 
   function buyUpgrade(upg) {
-    if (state.knowledge >= upg.cost && !state.upgradesPurchased.includes(upg.id)) {
-      state.knowledge -= upg.cost;
-      state.upgradesPurchased.push(upg.id);
-      upg.effect(state);
-      sfx.playBuy();
-      updateDisplay();
-      renderUpgrades();
-      renderBuildings();
-      renderOrbitIndicators();
-      saveGame();
-    }
+    if ((state.upgradesPurchased || []).includes(upg.id)) return;
+
+    // Trigger the active Quiz Gate Checkpoint!
+    openQuizGate({
+      type: 'upgrade',
+      def: upg,
+      cost: upg.cost || 0,
+      tier: upg.tier || 1
+    });
   }
 
+  // --- VISUAL UPGRADES & HELPERS ORBIT AROUND CLICKER ---
   let orbitAngle = 0;
   let isOrbitHovered = false;
   let activeOrbitBadges = [];
@@ -468,7 +1057,7 @@
     const indicators = [];
 
     // Add purchased upgrades
-    state.upgradesPurchased.forEach(upgId => {
+    (state.upgradesPurchased || []).forEach(upgId => {
       const upg = UPGRADES_DEF.find(u => u.id === upgId);
       if (upg) {
         indicators.push({
@@ -560,17 +1149,6 @@
         }
       }
     });
-
-    const upgCards = upgradesShelf.querySelectorAll('.upgrade-card');
-    UPGRADES_DEF.filter(u => !state.upgradesPurchased.includes(u.id)).forEach((u, i) => {
-      if (upgCards[i]) {
-        if (state.knowledge < u.cost) {
-          upgCards[i].classList.add('locked');
-        } else {
-          upgCards[i].classList.remove('locked');
-        }
-      }
-    });
   }
 
   // --- STATS & ACHIEVEMENTS ---
@@ -586,7 +1164,6 @@
     });
     statHelpersOwned.textContent = helpersCount.toLocaleString();
 
-    // Render Achievements
     const achievements = [
       { id: 'first_click', name: 'Freshman Orientation', desc: 'Click the Blue Jay 1 time', unlocked: state.totalClicks >= 1, icon: '🎓' },
       { id: 'clicks_100', name: 'Coffee Addict', desc: 'Click the Blue Jay 100 times', unlocked: state.totalClicks >= 100, icon: '☕' },
@@ -642,7 +1219,16 @@
     audioIcon.textContent = sfx.enabled ? '🔊' : '🔇';
   });
 
-  resetGameBtn.addEventListener('click', resetGame);
+  resetGameBtn.addEventListener('click', () => {
+    if (confirm('Reset knowledge and upgrades for this current study session?')) {
+      state = createFreshGameState();
+      updateDisplay();
+      renderBuildings();
+      renderUpgrades();
+      renderOrbitIndicators();
+      saveCurrentSession();
+    }
+  });
 
   statsModalBtn.addEventListener('click', () => {
     updateStatsModal();
@@ -658,14 +1244,10 @@
   });
 
   // Autosave interval
-  setInterval(saveGame, 5000);
-  window.addEventListener('beforeunload', saveGame);
+  setInterval(saveCurrentSession, 4000);
+  window.addEventListener('beforeunload', saveCurrentSession);
 
   // --- INITIALIZATION ---
-  loadGame();
-  renderBuildings();
-  renderUpgrades();
-  renderOrbitIndicators();
-  updateDisplay();
+  loadSessions();
   requestAnimationFrame(gameLoop);
 })();

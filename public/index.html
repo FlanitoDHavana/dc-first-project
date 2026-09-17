@@ -21,6 +21,38 @@
           <p class="logo-subtitle">Johns Hopkins University &bull; Homewood Edition</p>
         </div>
       </div>
+      
+      <!-- CURRENT ACTIVE STUDY TOPIC & POPUP SWITCHER -->
+      <div class="topic-switcher-container" id="topicSwitcherContainer">
+        <div class="active-topic-badge" id="activeTopicBadge" title="Current Study Topic">
+          <span class="topic-icon">📚</span>
+          <div class="topic-info-compact">
+            <span class="topic-label">CRAMMING FOR</span>
+            <strong id="currentTopicDisplay">No Topic Selected</strong>
+          </div>
+          <button id="switchTopicBtn" class="nav-btn nav-btn-accent" title="Switch or Create Study Topic" type="button">
+            <span>Switch</span>
+            <span class="dropdown-chevron">▾</span>
+          </button>
+        </div>
+
+        <!-- POP-UP DROPDOWN MENU -->
+        <div id="topicPopupMenu" class="topic-popup-menu hidden">
+          <div class="popup-header">
+            <div class="popup-title-group">
+              <span class="popup-title">Study Sessions</span>
+              <span class="popup-badge" id="popupSessionCountBadge">0 Topics</span>
+            </div>
+            <button id="popupNewTopicBtn" class="btn btn-primary btn-xs" type="button">
+              <span>➕</span> New Topic
+            </button>
+          </div>
+          <div class="popup-list" id="popupSessionsList">
+            <!-- Dynamically populated session items -->
+          </div>
+        </div>
+      </div>
+
       <div class="nav-actions">
         <button id="audioToggleBtn" class="nav-btn" title="Toggle Sound">
           <span class="icon" id="audioIcon">🔊</span>
@@ -123,6 +155,150 @@
             <h4>Hopkins Milestones</h4>
             <div class="achievements-list" id="achievementsList">
               <!-- Achievements rendered by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: STUDY SESSIONS & TOPICS -->
+    <div id="topicsModal" class="modal-backdrop hidden">
+      <div class="modal-card modal-card-lg">
+        <div class="modal-header">
+          <div class="header-with-tag">
+            <h3 id="topicsModalTitle">Hopkins Study Sessions</h3>
+            <span class="badge" id="topicsSessionCountBadge">0 Topics</span>
+          </div>
+          <button id="closeTopicsBtn" class="close-btn" title="Close modal">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+          <!-- VIEW 1: SESSIONS LIST -->
+          <div id="topicsListView" class="modal-view">
+            <!-- Empty State: Displayed when 0 topics exist -->
+            <div id="topicsEmptyState" class="empty-state">
+              <div class="empty-icon">🎓</div>
+              <h4>No Active Study Sessions</h4>
+              <p>Welcome to Cram Clicker! What class, exam, or topic are you cramming for? Set up your first topic to begin acquiring knowledge.</p>
+              <button id="newTopicFromEmptyBtn" class="btn btn-primary btn-lg">
+                <span>➕</span> Create New Study Topic
+              </button>
+            </div>
+
+            <!-- Populated State: Displayed when 1+ topics exist -->
+            <div id="topicsPopulatedState" class="topics-populated hidden">
+              <div class="topics-toolbar">
+                <p class="topics-subtitle">Select a past study topic to resume your progress, or start a new one.</p>
+                <button id="newTopicBtn" class="btn btn-primary">
+                  <span>➕</span> New Topic
+                </button>
+              </div>
+              <div class="sessions-grid" id="sessionsGrid">
+                <!-- Session cards rendered by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- VIEW 2: CREATE NEW TOPIC FORM -->
+          <div id="topicCreateView" class="modal-view hidden">
+            <div class="form-header">
+              <h4>Define Your Study Scope & Difficulty</h4>
+              <p class="form-desc">Cram Clicker will tailor questions and exam checkpoints to the exact topic and difficulty boundaries you set here.</p>
+            </div>
+
+            <form id="createTopicForm" class="topic-form">
+              <div class="form-group">
+                <label for="topicNameInput">
+                  <strong>Course / Exam Topic</strong>
+                  <span class="required">*</span>
+                </label>
+                <input type="text" id="topicNameInput" placeholder="e.g. Organic Chemistry II, Cell Biology, Multivariable Calculus..." required maxlength="80">
+                <span class="field-hint">The main subject or specific exam you're preparing for.</span>
+              </div>
+
+              <div class="form-group">
+                <label for="topicScopeInput">
+                  <strong>Scope & Content Boundaries</strong>
+                  <span class="required">*</span>
+                </label>
+                <textarea id="topicScopeInput" rows="3" placeholder="e.g. Chapters 1-4: Aldehydes and Ketones, nucleophilic additions, acetals, enolates. Do NOT include spectroscopy or NMR." required maxlength="300"></textarea>
+                <span class="field-hint">Specify chapters, key mechanisms, or topics to include, and explicitly list anything to exclude.</span>
+              </div>
+
+              <div class="form-group">
+                <label for="topicDifficultyInput">
+                  <strong>Difficulty Level & Bounds</strong>
+                  <span class="required">*</span>
+                </label>
+                <textarea id="topicDifficultyInput" rows="2" placeholder="e.g. College undergraduate midterm level. Focus on arrow-pushing mechanisms and synthesis. No trick questions or graduate proofs." required maxlength="250"></textarea>
+                <span class="field-hint">Bound the difficulty (e.g. AP High School, College Intro, Pre-Med/MCAT, Advanced Undergraduate).</span>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" id="cancelCreateTopicBtn" class="btn btn-secondary">Back to Sessions</button>
+                <button type="submit" class="btn btn-primary">
+                  <span>🚀</span> Launch Study Session
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: EXAM CHECKPOINT / UPGRADE QUIZ GATE -->
+    <div id="quizModal" class="modal-backdrop hidden">
+      <div class="modal-card modal-card-md">
+        <div class="modal-header modal-header-accent">
+          <div class="header-with-tag">
+            <h3>Exam Checkpoint</h3>
+            <span class="quiz-tier-badge" id="quizTierBadge">Tier 1: Fundamentals</span>
+          </div>
+          <button id="closeQuizBtn" class="close-btn" title="Cancel quiz">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="quiz-upgrade-banner">
+            <div class="quiz-icon-wrap" id="quizUpgradeIcon">🖊️</div>
+            <div class="quiz-upgrade-info">
+              <span class="quiz-target-label">UNLOCKING STUDY UPGRADE</span>
+              <h4 id="quizUpgradeTitle">PaperMate InkJoy Gel Pens</h4>
+              <span class="quiz-cost-label" id="quizUpgradeCost">Cost: 150 knowledge</span>
+            </div>
+          </div>
+
+          <div class="quiz-topic-scope" id="quizScopeBox">
+            <span class="scope-icon">🎯</span>
+            <div>
+              <strong>Topic:</strong> <span id="quizTopicName">Organic Chemistry</span> &bull; 
+              <span id="quizScopeText">Carbonyls</span>
+            </div>
+          </div>
+
+          <!-- QUESTION CONTAINER -->
+          <div class="quiz-question-container" id="quizQuestionBox">
+            <div class="question-loading" id="quizLoading">
+              <div class="spinner"></div>
+              <span>Formulating exam checkpoint question...</span>
+            </div>
+
+            <div class="question-content hidden" id="quizQuestionContent">
+              <div class="question-prompt" id="quizQuestionPrompt">Question text will appear here</div>
+              <div class="quiz-options-grid" id="quizOptionsGrid">
+                <!-- 4 Options rendered by JS -->
+              </div>
+
+              <!-- FEEDBACK BANNER (Reveals on answer) -->
+              <div class="quiz-feedback-box hidden" id="quizFeedbackBox">
+                <div class="feedback-header">
+                  <span class="feedback-icon" id="feedbackIcon">✅</span>
+                  <strong id="feedbackTitle">Correct Answer!</strong>
+                </div>
+                <p class="feedback-explanation" id="feedbackExplanation">Explanation text</p>
+                <div class="feedback-actions">
+                  <button id="quizActionBtn" class="btn btn-primary">Continue</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
