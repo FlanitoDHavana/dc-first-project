@@ -76,64 +76,64 @@
       id: 'coffee',
       name: 'Brody Café Drip Coffee',
       desc: 'Keeps your eyes open during morning 8 AM lectures.',
-      baseCost: 15,
-      baseKps: 0.5,
+      baseCost: 20,
+      baseKps: 0.4,
       icon: '☕'
     },
     {
       id: 'flashcards',
       name: 'Anki Flashcard Deck',
       desc: 'Spaced repetition algorithms maximize memory retention.',
-      baseCost: 100,
-      baseKps: 4,
+      baseCost: 140,
+      baseKps: 3,
       icon: '📇'
     },
     {
       id: 'ta',
       name: 'TA Office Hours',
       desc: 'Get unblocked on that brutal organic chemistry problem set.',
-      baseCost: 1100,
-      baseKps: 32,
+      baseCost: 1500,
+      baseKps: 22,
       icon: '🧑‍🏫'
     },
     {
       id: 'studyGroup',
       name: 'Brody Atrium Study Group',
       desc: 'Collaborative all-nighters fueled by energy drinks and shared panic.',
-      baseCost: 12000,
-      baseKps: 260,
+      baseCost: 16000,
+      baseKps: 175,
       icon: '👥'
     },
     {
       id: 'stacks',
       name: 'MSE Stacks Deep Dive',
       desc: 'Silence so absolute on B-Level that learning happens by osmosis.',
-      baseCost: 130000,
-      baseKps: 1400,
+      baseCost: 180000,
+      baseKps: 950,
       icon: '📚'
     },
     {
       id: 'gilman',
       name: 'Gilman Bell Tower Focus',
       desc: 'The historic chime of Gilman inspires peak academic performance.',
-      baseCost: 1400000,
-      baseKps: 7800,
+      baseCost: 2000000,
+      baseKps: 5000,
       icon: '🏛️'
     },
     {
       id: 'lab',
       name: 'Bloomberg Lab Grant',
       desc: 'State-of-the-art public health laboratory infrastructure.',
-      baseCost: 20000000,
-      baseKps: 44000,
+      baseCost: 28000000,
+      baseKps: 28000,
       icon: '🔬'
     },
     {
       id: 'laureate',
       name: 'Nobel Laureate Mentorship',
       desc: '1-on-1 guidance from world-renowned Hopkins faculty.',
-      baseCost: 330000000,
-      baseKps: 260000,
+      baseCost: 450000000,
+      baseKps: 160000,
       icon: '🏅'
     }
   ];
@@ -141,9 +141,9 @@
   const UPGRADES_DEF = [
     {
       id: 'pens',
-      name: 'Pilot G2 Pens',
-      desc: 'Double your clicking knowledge.',
-      cost: 100,
+      name: 'PaperMate InkJoy Gel Pens',
+      desc: 'Silky-smooth 0.7mm gel ink. Double your clicking knowledge.',
+      cost: 150,
       icon: '🖊️',
       effect: (state) => { state.clickMultiplier *= 2; }
     },
@@ -151,7 +151,7 @@
       id: 'highlighters',
       name: 'Color Highlighters',
       desc: 'Neon visual clarity. Double your clicking knowledge.',
-      cost: 500,
+      cost: 800,
       icon: '🖍️',
       effect: (state) => { state.clickMultiplier *= 2; }
     },
@@ -159,31 +159,55 @@
       id: 'birdInHand',
       name: 'Bird in Hand Espresso',
       desc: 'Boosts Brody Café output by 2x.',
-      cost: 1200,
+      cost: 2200,
       icon: '⚡',
       effect: (state) => { state.buildingMultipliers['coffee'] = (state.buildingMultipliers['coffee'] || 1) * 2; }
+    },
+    {
+      id: 'ffc',
+      name: 'FFC Unlimited Swipes',
+      desc: 'Fresh Food Cafe endless pasta and waffle bar powers late night cramming. +50% total KPS.',
+      cost: 6000,
+      icon: '🥗',
+      effect: (state) => { state.kpsMultiplier *= 1.5; }
     },
     {
       id: 'ergonomicChair',
       name: 'Brody Pod Chair',
       desc: 'Comfortable focus. Double your clicking knowledge.',
-      cost: 5000,
+      cost: 12000,
       icon: '🪑',
+      effect: (state) => { state.clickMultiplier *= 2; }
+    },
+    {
+      id: 'levering',
+      name: 'Levering Peach Tea Rush',
+      desc: 'A cold peach tea from Levering Lounge keeps the mind sharp. Double your clicking knowledge.',
+      cost: 25000,
+      icon: '🍑',
       effect: (state) => { state.clickMultiplier *= 2; }
     },
     {
       id: 'crabSpirit',
       name: 'Maryland Crab Spirit',
       desc: 'Pure Baltimore energy. Double clicking knowledge.',
-      cost: 25000,
+      cost: 60000,
       icon: '🦀',
       effect: (state) => { state.clickMultiplier *= 2; }
+    },
+    {
+      id: 'stuce',
+      name: 'Stuce Midnight Hangout',
+      desc: 'Decompress and collaborate with friends at the Student Center. Multiplies total KPS by 2x.',
+      cost: 150000,
+      icon: '🏢',
+      effect: (state) => { state.kpsMultiplier *= 2; }
     },
     {
       id: 'laxStick',
       name: 'D1 Championship Lacrosse Stick',
       desc: 'Blue Jay championship mentality. Double total KPS.',
-      cost: 150000,
+      cost: 400000,
       icon: '🥍',
       effect: (state) => { state.kpsMultiplier *= 2; }
     }
@@ -191,11 +215,14 @@
 
   const FLAVOR_QUOTES = [
     '"Brody Café is brewing fresh coffee. Start clicking to cram for midterms!"',
-    '"Keyser Quad is looking peaceful today. Perfect for reading."',
+    '"Grabbing an all-you-can-eat dinner at FFC before hitting the books."',
+    '"Keyser Quad is looking peaceful today. Perfect for reading on the grass."',
+    '"Getting a cold peach tea at Levering Lounge to stay sharp."',
     '"Someone left their notes on Level M of MSE. Free knowledge!"',
+    '"Heading over to Stuce for late-night project group work."',
     '"Spring Fair is coming up, but finals come first!"',
     '"Gilman Hall clock tower just chimed the hour. Back to studying!"',
-    '"You just found an empty study room with a working whiteboard!"',
+    '"You just found an empty study room in Brody with a working whiteboard!"',
     '"Your Blue Jay pride is accelerating your brainpower!"'
   ];
 
@@ -228,8 +255,8 @@
   }
 
   function getBuildingCost(buildingDef, currentCount) {
-    // 1.15 cost growth factor (standard Cookie Clicker formula)
-    return Math.floor(buildingDef.baseCost * Math.pow(1.15, currentCount));
+    // 1.18 cost growth factor for smoother, more deliberate progression pacing
+    return Math.floor(buildingDef.baseCost * Math.pow(1.18, currentCount));
   }
 
   function getKps() {
@@ -301,6 +328,7 @@
   const statsModalBtn = document.getElementById('statsModalBtn');
   const statsModal = document.getElementById('statsModal');
   const closeStatsBtn = document.getElementById('closeStatsBtn');
+  const upgradesOrbit = document.getElementById('upgradesOrbit');
 
   // Stats DOM
   const statTotalEarned = document.getElementById('statTotalEarned');
@@ -385,6 +413,7 @@
       sfx.playBuy();
       updateDisplay();
       renderBuildings();
+      renderOrbitIndicators();
       saveGame();
     }
   }
@@ -422,8 +451,95 @@
       updateDisplay();
       renderUpgrades();
       renderBuildings();
+      renderOrbitIndicators();
       saveGame();
     }
+  }
+
+  let orbitAngle = 0;
+  let isOrbitHovered = false;
+  let activeOrbitBadges = [];
+
+  function renderOrbitIndicators() {
+    if (!upgradesOrbit) return;
+    upgradesOrbit.innerHTML = '';
+    activeOrbitBadges = [];
+
+    const indicators = [];
+
+    // Add purchased upgrades
+    state.upgradesPurchased.forEach(upgId => {
+      const upg = UPGRADES_DEF.find(u => u.id === upgId);
+      if (upg) {
+        indicators.push({
+          id: upg.id,
+          name: upg.name,
+          desc: upg.desc,
+          icon: upg.icon,
+          count: null,
+          type: 'upgrade'
+        });
+      }
+    });
+
+    // Add purchased study helpers/buildings
+    BUILDINGS_DEF.forEach(b => {
+      const count = state.buildings[b.id] || 0;
+      if (count > 0) {
+        indicators.push({
+          id: b.id,
+          name: b.name,
+          desc: `${count} active (+${(b.baseKps * count * (state.buildingMultipliers[b.id] || 1) * state.kpsMultiplier).toFixed(1)} KPS)`,
+          icon: b.icon,
+          count: count,
+          type: 'building'
+        });
+      }
+    });
+
+    if (indicators.length === 0) {
+      upgradesOrbit.style.borderStyle = 'none';
+      return;
+    } else {
+      upgradesOrbit.style.borderStyle = 'dashed';
+    }
+
+    const total = indicators.length;
+
+    indicators.forEach((item, index) => {
+      const baseAngle = (index / total) * 2 * Math.PI - Math.PI / 2;
+
+      const badge = document.createElement('div');
+      badge.className = 'orbit-badge';
+
+      badge.innerHTML = `
+        <span class="badge-icon">${item.icon}</span>
+        ${item.count && item.count > 1 ? `<span class="badge-count">${item.count}</span>` : ''}
+        <div class="badge-tooltip">
+          <strong>${item.name}</strong><br>
+          <span>${item.desc}</span>
+        </div>
+      `;
+
+      badge.addEventListener('mouseenter', () => { isOrbitHovered = true; });
+      badge.addEventListener('mouseleave', () => { isOrbitHovered = false; });
+
+      upgradesOrbit.appendChild(badge);
+      activeOrbitBadges.push({ element: badge, baseAngle });
+    });
+
+    updateOrbitPositions();
+  }
+
+  function updateOrbitPositions() {
+    const radius = 195; // Radius in pixels for orbit placement
+    activeOrbitBadges.forEach(item => {
+      const angle = item.baseAngle + orbitAngle;
+      const x = Math.round(Math.cos(angle) * radius);
+      const y = Math.round(Math.sin(angle) * radius);
+      item.element.style.setProperty('--ox', `${x}px`);
+      item.element.style.setProperty('--oy', `${y}px`);
+    });
   }
 
   // --- DISPLAY UPDATE ---
@@ -504,6 +620,12 @@
       updateDisplay();
     }
 
+    // Smooth upright orbit movement (360 deg every 65s), pauses on hover
+    if (!isOrbitHovered && activeOrbitBadges.length > 0) {
+      orbitAngle += (2 * Math.PI / 65) * delta;
+      updateOrbitPositions();
+    }
+
     requestAnimationFrame(gameLoop);
   }
 
@@ -543,6 +665,7 @@
   loadGame();
   renderBuildings();
   renderUpgrades();
+  renderOrbitIndicators();
   updateDisplay();
   requestAnimationFrame(gameLoop);
 })();

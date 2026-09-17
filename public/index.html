@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cram Clicker | Johns Hopkins University</title>
-  <link rel="icon" type="image/svg+xml" href="bluejay.svg">
+  <link rel="icon" type="image/svg+xml" href="johns_hopkins_blue_jays.svg">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,7 @@
     <!-- TOP NAVIGATION BAR -->
     <header class="top-nav">
       <div class="brand">
-        <img src="bluejay.svg" alt="JHU Blue Jay" class="nav-logo">
+        <img src="johns_hopkins_blue_jays.svg" alt="JHU Blue Jay" class="nav-logo">
         <div>
           <h1 class="logo-title">CRAM CLICKER</h1>
           <p class="logo-subtitle">Johns Hopkins University &bull; Homewood Edition</p>
@@ -51,11 +51,17 @@
           </div>
         </div>
 
-        <!-- CLICKABLE BLUE JAY TARGET -->
+        <!-- CLICKABLE BLUE JAY TARGET & UPGRADES ORBIT -->
         <div class="mascot-container">
           <div class="glow-ring"></div>
+          
+          <!-- Visual orbital indicators of unlocked upgrades & study aids -->
+          <div id="upgradesOrbit" class="upgrades-orbit"></div>
+
           <button id="mascotBtn" class="mascot-btn" aria-label="Click the Blue Jay to study">
-            <img src="bluejay.svg" alt="Hopkins Blue Jay Mascot" class="mascot-img" id="mascotImg" draggable="false">
+            <div class="mascot-plate">
+              <img src="johns_hopkins_blue_jays.svg" alt="Hopkins Blue Jay Mascot" class="mascot-img" id="mascotImg" draggable="false">
+            </div>
           </button>
           <!-- Container for floating +1 click numbers & sparkles -->
           <div id="clickEffectsContainer" class="click-effects-container"></div>
