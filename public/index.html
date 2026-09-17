@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DC First Project</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="badge">Vercel Ready</div>
+      <h1>Node.js Web App</h1>
+      <p class="subtitle">A clean foundation built with Express and ES Modules, ready for deployment.</p>
+    </header>
+
+    <main class="card">
+      <h2>API Status Check</h2>
+      <div class="status-box" id="statusBox">
+        <span class="indicator"></span>
+        <span id="statusText">Checking server status...</span>
+      </div>
+      <button id="checkBtn" class="btn">Test API Endpoint</button>
+      <pre id="apiOutput" class="code-block">// API response will appear here</pre>
+    </main>
+
+    <footer class="footer">
+      <p>Configured for modern web development and seamless Vercel deployments.</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
