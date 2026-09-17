@@ -1,0 +1,23 @@
+{
+  "name": "dc-first-project",
+  "version": "1.0.0",
+  "description": "Node.js web application configured for Vercel deployment",
+  "type": "module",
+  "main": "api/index.js",
+  "scripts": {
+    "dev": "node api/index.js",
+    "start": "node api/index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "vercel",
+    "webapp"
+  ],
+  "author": "",
+  "license": "ISC"
+}
+
