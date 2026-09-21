@@ -6,7 +6,6 @@ A Johns Hopkins-themed incremental Cookie Clicker-style web application built wi
 
 ## 🎮 Game Features
 
-- **Hopkins Blue Jay Mascot**: Handcrafted vector SVG mascot styled with official JHU colors (Hopkins Heritage Blue `#002D72`, Jay Blue `#68ACE5`, and Gold `#F1BE48`).
 - **Interactive Clicking**: Dynamic click squeeze animations, glowing aura pulses, and floating `+X` numbers.
 - **Campus Store & Study Helpers**:
   - ☕ **Brody Café Drip Coffee**: +0.4 KPS (Knowledge Per Second)
@@ -108,23 +107,9 @@ npx vercel
 
 ---
 
-## ⚠️ Known Issues & Development Status
 
-> [!NOTE]
-> **Studying Mechanics & UX Iteration**
-> Active gameplay testing and polish are ongoing:
->
-> 1. **Question Generation Updated**:
->    - Updated model resolution to use `gemini-3.6-flash` (with automated fallback to `gemini-3.5-flash` and domain templates).
->    - Procedural fallback questions now shuffle options to prevent the correct answer from always being option A.
-> 2. **Powerup & Study Aid Checkpoint Alignment**:
->    - Dynamic labels in the exam modal now distinguish between unlocking passive powerups/upgrades and acquiring campus study aids (buildings).
->    - Upgrade cards in the store now correctly reflect affordability states (`cant-afford`), prevent premature accidental triggers, and properly update the unlock button with the specific item name.
-> 3. **Ongoing Gameplay Balancing**:
->    - Pacing and frequency of exam checkpoints are being calibrated so active quizzing feels rewarding and harmonious alongside passive autoclicker accumulation.
-
----
 
 ## 🤝 Contributing & Agent Guidelines
+
 
 Please refer to [`agents.md`](agents.md) for branch policies, PR requirements, and agent instructions.
