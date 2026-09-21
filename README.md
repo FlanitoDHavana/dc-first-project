@@ -23,7 +23,7 @@ A Johns Hopkins-themed incremental Cookie Clicker-style web application built wi
   - *Tier 2 (Application)*: Problem solving, mechanisms, and applying principles (FFC Swipes, Brody Pod Chair, Levering Tea, Crab Spirit).
   - *Tier 3 (Mastery)*: Advanced synthesis, edge cases, and comprehensive mastery (Stuce Hangout, D1 Lacrosse Stick).
 - **Session Switcher & Persistence**: Seamlessly switch between multiple ongoing study sessions. Each topic tracks its own knowledge, helpers, upgrades, and statistics independently.
-- **Question Generation Engine**: Powered by `POST /api/generate-question` supporting Gemini AI generation via `GEMINI_API_KEY` or rich offline procedural subject templates.
+- **Question Generation Engine**: Powered by `POST /api/generate-question` utilizing Gemini AI (`gemini-3.6-flash` / `gemini-3.5-flash`) via `GEMINI_API_KEY` or rich offline procedural subject templates with randomized option order.
 - **Audio Synthesis**: Zero-dependency sound effects powered by the Web Audio API (toggleable sound).
 - **Academic Transcripts & Achievements**: Track total knowledge crammed, clicks, study time, and unlock milestone badges (e.g., *Freshman Orientation*, *Dean's List*, *Phi Beta Kappa*).
 - **Autosave**: Automatic `localStorage` saving every 4 seconds and on page close.
@@ -40,6 +40,8 @@ A Johns Hopkins-themed incremental Cookie Clicker-style web application built wi
 │   ├── style.css       # JHU-themed styling, animations, and responsive layout
 │   ├── app.js          # Game loop, audio synthesizer, store logic, and state
 │   └── johns_hopkins_blue_jays.svg # Official Hopkins Blue Jay mascot vector
+├── .env                # Local environment secrets (ignored by git)
+├── .env.example        # Template for environment configuration
 ├── .gitignore          # Git ignore rules for Node & Vercel
 ├── agents.md           # Branch policies and instructions for AI coding agents
 ├── package.json        # Project metadata, dependencies, and npm scripts
@@ -53,7 +55,7 @@ A Johns Hopkins-themed incremental Cookie Clicker-style web application built wi
 
 ### 1. Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18+ or v20+ recommended)
+- [Node.js](https://nodejs.org/) (v20+ or v22+ recommended; supports native `.env` loading via `process.loadEnvFile()`)
 - [npm](https://www.npmjs.com/)
 
 ### 2. Install Dependencies
@@ -62,7 +64,22 @@ A Johns Hopkins-themed incremental Cookie Clicker-style web application built wi
 npm install
 ```
 
-### 3. Local Development
+### 3. Configure Environment Variables (Optional for Gemini AI)
+
+To enable live AI question generation tailored to your course scope:
+
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+2. Obtain a free API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+3. Set your key in `.env`:
+   ```env
+   GEMINI_API_KEY=your_actual_gemini_api_key
+   ```
+*(If no API key is provided, Cram Clicker will automatically use offline procedural question templates.)*
+
+### 4. Local Development
 
 Start the local development server:
 
@@ -80,7 +97,8 @@ This project is configured out of the box for Vercel:
 
 1. Push your branch to GitHub and create a Pull Request.
 2. Link your repository in the [Vercel Dashboard](https://vercel.com/new).
-3. Vercel automatically detects the Express serverless setup in `api/index.js` and serves static files from `public/`.
+3. Add `GEMINI_API_KEY` under **Project Settings > Environment Variables** on Vercel if using live AI question generation.
+4. Vercel automatically detects the Express serverless setup in `api/index.js` and serves static files from `public/`.
 
 Or deploy via the Vercel CLI:
 
@@ -92,20 +110,18 @@ npx vercel
 
 ## ⚠️ Known Issues & Development Status
 
-> [!WARNING]
-> **Quizzing System Status: Heavily in flux / Messed Up**
-> The current quizzing and exam checkpoint system is experiencing significant design, technical, and UX issues that are actively being reworked:
+> [!NOTE]
+> **Studying Mechanics & UX Iteration**
+> Active gameplay testing and polish are ongoing:
 >
-> 1. **Messed-Up Quizzing Integration**:
->    - Conflicting mechanics between "autoclickers" (buildings) and passive "upgrades": gating every single autoclicker purchase behind a quiz question causes friction, confusion with affordability states, and breaks traditional clicker game pacing.
->    - The thresholding between requiring knowledge to attempt a quiz vs taking a quiz to earn/unlock the item is inconsistent.
-> 2. **Question Quality, Difficulty Curve, & Fallbacks**:
->    - Procedural fallback questions repeat frequently and lack true adaptive depth.
->    - The difficulty scaling (Tier 1 vs Tier 2 vs Tier 3) needs tighter calibration against user-specified course scope and bounds.
-> 3. **Modal & UI Nesting Glitches**:
->    - Earlier versions had broken backdrop nesting (`#quizModal` and `#topicsModal` trapped inside `#statsModal`), and the active session switch button required restructuring into a pop-up menu.
-> 4. **Progression Pacing**:
->    - Scaling factors and knowledge accumulation rates need rebalancing to properly align active study recall with campus building upgrades.
+> 1. **Question Generation Updated**:
+>    - Updated model resolution to use `gemini-3.6-flash` (with automated fallback to `gemini-3.5-flash` and domain templates).
+>    - Procedural fallback questions now shuffle options to prevent the correct answer from always being option A.
+> 2. **Powerup & Study Aid Checkpoint Alignment**:
+>    - Dynamic labels in the exam modal now distinguish between unlocking passive powerups/upgrades and acquiring campus study aids (buildings).
+>    - Upgrade cards in the store now correctly reflect affordability states (`cant-afford`), prevent premature accidental triggers, and properly update the unlock button with the specific item name.
+> 3. **Ongoing Gameplay Balancing**:
+>    - Pacing and frequency of exam checkpoints are being calibrated so active quizzing feels rewarding and harmonious alongside passive autoclicker accumulation.
 
 ---
 
