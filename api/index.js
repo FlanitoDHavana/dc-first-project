@@ -52,6 +52,7 @@ app.post('/api/generate-question', async (req, res) => {
   const apiKey = clientApiKey || process.env.GEMINI_API_KEY;
   if (apiKey) {
     const candidateModels = [
+      'gemini-3-flash-preview',
       process.env.GEMINI_MODEL,
       'gemini-3.6-flash',
       'gemini-3.5-flash',
