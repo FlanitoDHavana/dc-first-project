@@ -955,14 +955,17 @@
     el.className = 'float-number';
     el.textContent = `+${formatNumber(value)}`;
 
-    const rect = mascotBtn.getBoundingClientRect();
-    const relX = x ? (x - rect.left) : (rect.width / 2);
-    const relY = y ? (y - rect.top) : (rect.height / 2);
+    const container = clickEffectsContainer || mascotBtn;
+    const rect = container.getBoundingClientRect();
+    const relX = (x !== undefined && x !== null) ? (x - rect.left) : (rect.width / 2);
+    const relY = (y !== undefined && y !== null) ? (y - rect.top) : (rect.height / 2);
 
     el.style.left = `${relX + (Math.random() * 30 - 15)}px`;
     el.style.top = `${relY + (Math.random() * 20 - 10)}px`;
 
-    clickEffectsContainer.appendChild(el);
+    if (clickEffectsContainer) {
+      clickEffectsContainer.appendChild(el);
+    }
 
     setTimeout(() => {
       if (el.parentNode) el.parentNode.removeChild(el);
@@ -1188,7 +1191,9 @@
   }
 
   function updateOrbitPositions() {
-    const radius = 195; // Radius in pixels for orbit placement
+    const radius = (upgradesOrbit && upgradesOrbit.offsetWidth > 0)
+      ? (upgradesOrbit.offsetWidth / 2)
+      : 195;
     activeOrbitBadges.forEach(item => {
       const angle = item.baseAngle + orbitAngle;
       const x = Math.round(Math.cos(angle) * radius);
@@ -1324,6 +1329,9 @@
   // Autosave interval
   setInterval(saveCurrentSession, 4000);
   window.addEventListener('beforeunload', saveCurrentSession);
+  window.addEventListener('resize', () => {
+    updateOrbitPositions();
+  });
 
   // --- INITIALIZATION ---
   loadSessions();

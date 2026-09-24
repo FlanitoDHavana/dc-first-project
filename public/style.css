@@ -21,6 +21,12 @@
 
   --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* RESPONSIVE SCALING SIZES */
+  --mascot-size: min(440px, 86vw);
+  --orbit-size: calc(var(--mascot-size) * 0.886);
+  --plate-size: calc(var(--mascot-size) * 0.614);
+  --glow-size: calc(var(--mascot-size) * 0.727);
 }
 
 * {
@@ -29,6 +35,11 @@
   padding: 0;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a, input, textarea {
+  touch-action: manipulation;
 }
 
 body {
@@ -42,10 +53,12 @@ body {
   font-family: var(--font-display);
   min-height: 100vh;
   overflow-x: hidden;
+  width: 100%;
 }
 
 .game-wrapper {
-  max-width: 1400px;
+  max-width: 1440px;
+  width: 100%;
   margin: 0 auto;
   min-height: 100vh;
   display: flex;
@@ -491,16 +504,11 @@ body {
 /* MAIN DUAL COLUMN CONTAINER */
 .game-container {
   display: grid;
-  grid-template-columns: 1fr 480px;
+  grid-template-columns: 1fr 460px;
   flex: 1;
   gap: 2rem;
   padding: 2rem;
-}
-
-@media (max-width: 1024px) {
-  .game-container {
-    grid-template-columns: 1fr;
-  }
+  width: 100%;
 }
 
 /* LEFT COLUMN: THE CLICKER */
@@ -511,20 +519,22 @@ body {
   justify-content: center;
   position: relative;
   gap: 2rem;
+  width: 100%;
 }
 
 .score-card {
   text-align: center;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  padding: 1.5rem 3rem;
+  padding: 1.25rem 2rem;
   border-radius: 20px;
   backdrop-filter: blur(16px);
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 45, 114, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 320px;
+  width: 100%;
+  max-width: 440px;
 }
 
 .score-label {
@@ -536,7 +546,7 @@ body {
 }
 
 .score-counter {
-  font-size: 3.6rem;
+  font-size: clamp(2.4rem, 6.5vw, 3.6rem);
   font-weight: 900;
   line-height: 1.1;
   font-family: var(--font-display);
@@ -544,6 +554,8 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 4px 20px rgba(104, 172, 229, 0.3);
+  word-break: break-all;
+  max-width: 100%;
 }
 
 .rate-badge {
@@ -555,9 +567,10 @@ body {
   color: var(--jhu-blue-light);
   padding: 0.35rem 1rem;
   border-radius: 999px;
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 2.5vw, 0.95rem);
   font-weight: 600;
   margin-top: 0.6rem;
+  max-width: 100%;
 }
 
 .pulse-dot {
@@ -588,17 +601,20 @@ body {
 /* MASCOT BUTTON & ANIMATIONS */
 .mascot-container {
   position: relative;
-  width: 440px;
-  height: 440px;
+  width: var(--mascot-size);
+  height: var(--mascot-size);
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0 auto;
 }
 
 .glow-ring {
   position: absolute;
-  width: 320px;
-  height: 320px;
+  width: var(--glow-size);
+  height: var(--glow-size);
   border-radius: 50%;
   background: radial-gradient(circle, rgba(104, 172, 229, 0.25) 0%, rgba(0, 45, 114, 0.1) 60%, transparent 80%);
   pointer-events: none;
@@ -613,8 +629,8 @@ body {
 /* UPGRADES ORBIT AROUND CLICKER */
 .upgrades-orbit {
   position: absolute;
-  width: 390px;
-  height: 390px;
+  width: var(--orbit-size);
+  height: var(--orbit-size);
   border-radius: 50%;
   border: 1.5px dashed rgba(104, 172, 229, 0.35);
   display: flex;
@@ -713,8 +729,8 @@ body {
 }
 
 .mascot-plate {
-  width: 270px;
-  height: 270px;
+  width: var(--plate-size);
+  height: var(--plate-size);
   border-radius: 50%;
   background: radial-gradient(circle, #0e1e44 0%, #040916 90%);
   border: 4px solid var(--jhu-blue);
@@ -790,14 +806,15 @@ body {
 .flavor-banner {
   background: rgba(10, 18, 38, 0.6);
   border: 1px solid var(--card-border);
-  padding: 0.85rem 1.5rem;
+  padding: 0.85rem 1.25rem;
   border-radius: 12px;
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 2.5vw, 0.9rem);
   color: var(--text-dim);
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  max-width: 480px;
+  width: 100%;
+  max-width: 440px;
   text-align: center;
 }
 
@@ -812,6 +829,7 @@ body {
   border: none;
   padding: 0;
   box-shadow: none;
+  width: 100%;
 }
 
 .store-panel {
@@ -1098,6 +1116,9 @@ body {
   border-radius: 20px;
   width: 100%;
   max-width: 580px;
+  max-height: calc(100vh - 2.5rem);
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
   overflow: hidden;
 }
@@ -1134,13 +1155,15 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  max-height: 70vh;
+  flex: 1;
+  max-height: calc(100vh - 9rem);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 1rem;
 }
 
@@ -1782,4 +1805,466 @@ body {
 .shake-card {
   animation: cantAffordShake 0.35s ease;
 }
+
+/* ==========================================================================
+   COMPREHENSIVE RESPONSIVE DESIGN & SCREEN-SIZE ADAPTATIONS
+   ========================================================================== */
+
+/* 1. LARGE & ULTRAWIDE DISPLAYS (>= 1440px) */
+@media (min-width: 1440px) {
+  .game-wrapper {
+    max-width: 1560px;
+  }
+  .game-container {
+    grid-template-columns: 1fr 500px;
+    gap: 2.5rem;
+    padding: 2.5rem;
+  }
+  :root {
+    --mascot-size: 460px;
+  }
+}
+
+/* 2. MEDIUM DESKTOPS & STANDARD LAPTOPS (961px - 1200px) */
+@media (max-width: 1200px) and (min-width: 961px) {
+  .game-container {
+    grid-template-columns: 1fr 400px;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+  :root {
+    --mascot-size: min(390px, 42vw);
+  }
+  .building-card {
+    padding: 0.75rem 0.85rem;
+  }
+  .building-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 1.7rem;
+  }
+}
+
+/* 3. TABLETS & SMALL DESKTOPS (<= 960px) - SWITCH TO DYNAMIC SINGLE COLUMN */
+@media (max-width: 960px) {
+  .game-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 1.5rem 1.25rem 3rem 1.25rem;
+  }
+
+  .store-section {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .buildings-panel {
+    min-height: auto;
+    overflow: visible;
+  }
+
+  .buildings-scroll-area {
+    max-height: 520px;
+  }
+
+  :root {
+    --mascot-size: min(400px, 70vw);
+  }
+}
+
+/* 4. TABLETS PORTRAIT & MOBILE PHONES (<= 768px) */
+@media (max-width: 768px) {
+  .top-nav {
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    gap: 0.65rem;
+  }
+
+  .brand {
+    gap: 0.65rem;
+  }
+
+  .nav-logo {
+    width: 38px;
+    height: 38px;
+  }
+
+  .logo-title {
+    font-size: 1.35rem;
+  }
+
+  .logo-subtitle {
+    font-size: 0.72rem;
+  }
+
+  .nav-actions {
+    gap: 0.4rem;
+  }
+
+  .nav-btn {
+    padding: 0.45rem 0.65rem;
+    font-size: 0.8rem;
+  }
+
+  /* Two-tier header: Topic switcher takes full width row on mobile */
+  .topic-switcher-container {
+    order: 3;
+    width: 100%;
+    margin-top: 0.2rem;
+  }
+
+  .active-topic-badge {
+    width: 100%;
+    justify-content: space-between;
+    padding: 0.45rem 0.85rem;
+  }
+
+  .topic-info-compact {
+    min-width: 0;
+    max-width: none;
+    flex: 1;
+    margin-right: 0.5rem;
+  }
+
+  .active-topic-badge strong {
+    max-width: none;
+  }
+
+  .topic-popup-menu {
+    width: 100%;
+    max-width: calc(100vw - 2rem);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .game-container {
+    padding: 1rem 0.75rem 2.5rem 0.75rem;
+    gap: 1.5rem;
+  }
+
+  .clicker-section {
+    gap: 1.25rem;
+  }
+
+  :root {
+    --mascot-size: min(360px, 86vw);
+  }
+
+  .score-card {
+    padding: 1.15rem 1.5rem;
+  }
+
+  /* Modal scaling */
+  .modal-backdrop {
+    padding: 0.75rem;
+  }
+
+  .modal-card {
+    border-radius: 16px;
+  }
+
+  .modal-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .modal-body {
+    padding: 1.15rem;
+  }
+}
+
+/* 5. SMARTPHONES (<= 480px) */
+@media (max-width: 480px) {
+  .logo-subtitle {
+    display: none;
+  }
+
+  .nav-btn .nav-btn-text {
+    display: none;
+  }
+
+  .nav-btn {
+    padding: 0.45rem 0.55rem;
+  }
+
+  :root {
+    --mascot-size: min(300px, 84vw);
+  }
+
+  .orbit-badge {
+    width: 36px;
+    height: 36px;
+  }
+
+  .orbit-badge .badge-icon {
+    font-size: 1.05rem;
+  }
+
+  .orbit-badge .badge-count {
+    font-size: 0.55rem;
+    padding: 1px 4px;
+    bottom: -3px;
+    right: -3px;
+  }
+
+  .score-card {
+    padding: 1rem 1.15rem;
+  }
+
+  .score-counter {
+    font-size: clamp(2rem, 8.5vw, 2.75rem);
+  }
+
+  .rate-badge {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.7rem;
+  }
+
+  .click-power-hint {
+    font-size: 0.75rem;
+  }
+
+  .flavor-banner {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.8rem;
+  }
+
+  .store-panel {
+    padding: 0.85rem;
+    border-radius: 14px;
+    gap: 0.75rem;
+  }
+
+  .store-header h2 {
+    font-size: 1rem;
+  }
+
+  .store-tag {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.45rem;
+  }
+
+  .upgrades-shelf {
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    gap: 0.45rem;
+    padding: 0.45rem;
+  }
+
+  .upgrade-card {
+    width: 50px;
+    height: 50px;
+  }
+
+  .upgrade-card .upg-icon {
+    font-size: 1.3rem;
+  }
+
+  .upgrade-card .tier-indicator {
+    font-size: 0.52rem;
+    padding: 0.08rem 0.28rem;
+  }
+
+  .buildings-list {
+    gap: 0.65rem;
+  }
+
+  .building-card {
+    padding: 0.65rem 0.75rem;
+    border-radius: 12px;
+    gap: 0.5rem;
+  }
+
+  .building-left {
+    gap: 0.65rem;
+  }
+
+  .building-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1.5rem;
+  }
+
+  .building-name {
+    font-size: 0.88rem;
+  }
+
+  .building-desc {
+    font-size: 0.68rem;
+  }
+
+  .building-cost {
+    font-size: 0.78rem;
+  }
+
+  .building-count {
+    font-size: 1.15rem;
+  }
+
+  .buildings-scroll-area {
+    max-height: 440px;
+  }
+
+  /* Modals on small screens */
+  .modal-backdrop {
+    padding: 0.4rem;
+  }
+
+  .modal-card {
+    border-radius: 14px;
+    max-height: 96vh;
+  }
+
+  .modal-header {
+    padding: 0.85rem 1rem;
+  }
+
+  .modal-header h3 {
+    font-size: 1.05rem;
+  }
+
+  .modal-body {
+    padding: 0.9rem;
+    gap: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .stat-item {
+    padding: 0.65rem;
+    border-radius: 10px;
+  }
+
+  .stat-num {
+    font-size: 1.15rem;
+  }
+
+  .stat-name {
+    font-size: 0.7rem;
+  }
+
+  .topics-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .topics-toolbar button {
+    width: 100%;
+  }
+
+  .session-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.8rem;
+  }
+
+  .session-card-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .session-card-title {
+    font-size: 0.95rem;
+  }
+
+  .session-card-scope {
+    font-size: 0.75rem;
+  }
+
+  .quiz-upgrade-banner {
+    padding: 0.65rem 0.85rem;
+    gap: 0.65rem;
+  }
+
+  .quiz-icon-wrap {
+    width: 42px;
+    height: 42px;
+    font-size: 1.5rem;
+  }
+
+  .quiz-upgrade-info h4 {
+    font-size: 0.95rem;
+  }
+
+  .question-prompt {
+    font-size: 0.95rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .quiz-option-btn {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.85rem;
+    gap: 0.65rem;
+  }
+
+  .quiz-option-btn .option-letter {
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+  }
+}
+
+/* 6. ULTRA-COMPACT DEVICES (<= 360px) */
+@media (max-width: 360px) {
+  :root {
+    --mascot-size: min(260px, 86vw);
+  }
+
+  .brand {
+    gap: 0.4rem;
+  }
+
+  .logo-title {
+    font-size: 1.15rem;
+  }
+
+  .nav-logo {
+    width: 30px;
+    height: 30px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .score-counter {
+    font-size: 1.9rem;
+  }
+}
+
+/* 7. SHORT VIEWPORTS & MOBILE LANDSCAPE (<= 650px height) */
+@media (max-height: 650px) {
+  .top-nav {
+    padding: 0.5rem 1rem;
+  }
+
+  :root {
+    --mascot-size: min(240px, 45vh);
+  }
+
+  .clicker-section {
+    gap: 1rem;
+  }
+
+  .score-card {
+    padding: 0.75rem 1.25rem;
+  }
+
+  .score-counter {
+    font-size: 2.2rem;
+  }
+
+  .store-section {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .buildings-scroll-area {
+    max-height: 350px;
+  }
+}
+
 
