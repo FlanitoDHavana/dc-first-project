@@ -337,12 +337,19 @@
       loadSession(sessionToLoad);
     } else {
       // First time user with zero sessions: Open topics modal with empty state!
+      renderBuildings();
+      renderUpgrades();
+      renderOrbitIndicators();
+      updateDisplay();
       openTopicsModal(true);
     }
   }
 
   function loadSession(session) {
     currentSession = session;
+    if (!Array.isArray(currentSession.askedQuestions)) {
+      currentSession.askedQuestions = [];
+    }
     state = JSON.parse(JSON.stringify(session.state));
 
     // Ensure all building keys exist
@@ -481,6 +488,7 @@
   const quizModal = document.getElementById('quizModal');
   const closeQuizBtn = document.getElementById('closeQuizBtn');
   const quizTierBadge = document.getElementById('quizTierBadge');
+  const quizTargetLabel = document.getElementById('quizTargetLabel');
   const quizUpgradeIcon = document.getElementById('quizUpgradeIcon');
   const quizUpgradeTitle = document.getElementById('quizUpgradeTitle');
   const quizUpgradeCost = document.getElementById('quizUpgradeCost');
@@ -688,6 +696,7 @@
       topicName,
       scope,
       difficultyBounds,
+      askedQuestions: [],
       created: Date.now(),
       lastPlayed: Date.now(),
       state: createFreshGameState()
@@ -751,6 +760,9 @@
     quizUpgradeIcon.textContent = item.def.icon;
     quizUpgradeTitle.textContent = item.def.name;
     quizUpgradeCost.textContent = `Cost: ${formatNumber(item.cost)} knowledge`;
+    if (quizTargetLabel) {
+      quizTargetLabel.textContent = item.type === 'upgrade' ? 'UNLOCKING STUDY UPGRADE' : 'ACQUIRING STUDY AID';
+    }
 
     const tier = item.def.tier || item.tier || 1;
     quizTierBadge.className = `quiz-tier-badge tier-${tier}`;
@@ -759,12 +771,21 @@
     quizTopicName.textContent = currentSession ? currentSession.topicName : 'General Study';
     quizScopeText.textContent = currentSession ? currentSession.scope : 'General curriculum';
 
-    // Show loading spinner
-    quizLoading.classList.remove('hidden');
-    quizQuestionContent.classList.add('hidden');
+    // Reset action button & feedback state
+    quizActionBtn.textContent = 'Continue';
+    quizActionBtn.onclick = null;
+    quizQuestionPrompt.textContent = '';
+    quizOptionsGrid.innerHTML = '';
+    feedbackTitle.textContent = '';
+    feedbackExplanation.textContent = '';
+    feedbackIcon.textContent = '';
+    quizFeedbackBox.className = 'quiz-feedback-box hidden';
     quizFeedbackBox.classList.add('hidden');
+    quizQuestionContent.classList.add('hidden');
+    quizLoading.classList.remove('hidden');
 
     try {
+      const prevAsked = Array.isArray(currentSession?.askedQuestions) ? currentSession.askedQuestions : [];
       const res = await fetch('/api/generate-question', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -773,13 +794,22 @@
           scope: currentSession?.scope || 'Core concepts',
           difficultyBounds: currentSession?.difficultyBounds || 'College undergraduate',
           tier: tier,
-          upgradeName: item.def.name
+          upgradeName: item.def.name,
+          previousQuestions: prevAsked.slice(-10)
         })
       });
 
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
       const data = await res.json();
       currentQuestion = data;
+      if (currentSession && data.question) {
+        if (!Array.isArray(currentSession.askedQuestions)) currentSession.askedQuestions = [];
+        if (!currentSession.askedQuestions.includes(data.question)) {
+          currentSession.askedQuestions.push(data.question);
+          if (currentSession.askedQuestions.length > 25) currentSession.askedQuestions.shift();
+          saveCurrentSession();
+        }
+      }
       renderQuizQuestion(data);
     } catch (err) {
       console.warn('Question API failed, using fallback question:', err);
@@ -801,8 +831,9 @@
 
   function renderQuizQuestion(data) {
     quizLoading.classList.add('hidden');
-    quizQuestionContent.classList.remove('hidden');
+    quizFeedbackBox.className = 'quiz-feedback-box hidden';
     quizFeedbackBox.classList.add('hidden');
+    quizQuestionContent.classList.remove('hidden');
 
     quizQuestionPrompt.textContent = data.question;
     quizOptionsGrid.innerHTML = '';
@@ -810,10 +841,17 @@
     data.options.forEach((opt, idx) => {
       const btn = document.createElement('button');
       btn.className = 'quiz-option-btn';
-      btn.innerHTML = `
-        <span class="option-letter">${String.fromCharCode(65 + idx)}</span>
-        <span>${opt}</span>
-      `;
+
+      const letterSpan = document.createElement('span');
+      letterSpan.className = 'option-letter';
+      letterSpan.textContent = String.fromCharCode(65 + idx);
+
+      const textSpan = document.createElement('span');
+      textSpan.className = 'option-text';
+      textSpan.textContent = opt;
+
+      btn.appendChild(letterSpan);
+      btn.appendChild(textSpan);
       btn.addEventListener('click', () => handleQuizAnswer(idx, data));
       quizOptionsGrid.appendChild(btn);
     });
@@ -840,7 +878,9 @@
       feedbackIcon.textContent = '🎉';
       feedbackTitle.textContent = 'Checkpoint Passed! Correct!';
       feedbackExplanation.textContent = data.explanation || 'Great job! Your knowledge unlocked this academic aid.';
-      quizActionBtn.textContent = `Unlock ${pendingItem ? pendingItem.def.name : 'Upgrade'}`;
+      quizActionBtn.textContent = pendingItem
+        ? (pendingItem.type === 'upgrade' ? `Unlock ${pendingItem.def.name}` : `Claim ${pendingItem.def.name}`)
+        : 'Claim Item';
 
       quizActionBtn.onclick = () => {
         if (!pendingItem) return;
@@ -854,12 +894,12 @@
           state.buildings[b.id] = count + 1;
         } else if (pendingItem.type === 'upgrade') {
           const upg = pendingItem.def;
-          if (!state.upgradesPurchased.includes(upg.id)) {
-            state.upgradesPurchased.push(upg.id);
-            upg.effect(state);
-          }
           if (state.knowledge >= pendingItem.cost) {
             state.knowledge -= pendingItem.cost;
+            if (!state.upgradesPurchased.includes(upg.id)) {
+              state.upgradesPurchased.push(upg.id);
+              upg.effect(state);
+            }
           }
         }
 
@@ -887,8 +927,21 @@
 
   function closeQuizGateModal() {
     quizModal.classList.add('hidden');
+    quizFeedbackBox.className = 'quiz-feedback-box hidden';
+    quizFeedbackBox.classList.add('hidden');
+    quizQuestionContent.classList.add('hidden');
+    quizLoading.classList.remove('hidden');
+    quizQuestionPrompt.textContent = '';
+    quizOptionsGrid.innerHTML = '';
+    feedbackTitle.textContent = '';
+    feedbackExplanation.textContent = '';
+    feedbackIcon.textContent = '';
     pendingItem = null;
     currentQuestion = null;
+    if (quizActionBtn) {
+      quizActionBtn.textContent = 'Continue';
+      quizActionBtn.onclick = null;
+    }
   }
 
   closeQuizBtn.addEventListener('click', closeQuizGateModal);
@@ -1013,10 +1066,12 @@
 
       const tier = upg.tier || 1;
       const tierLabel = tier === 1 ? 'Tier 1' : tier === 2 ? 'Tier 2' : 'Tier 3';
+      const canAfford = state.knowledge >= upg.cost;
 
       const card = document.createElement('div');
-      card.className = `upgrade-card tier-${tier}`;
-      card.title = `${upg.name} (${tierLabel} Exam Checkpoint)\n${upg.desc}\nClick to answer exam checkpoint question and unlock!`;
+      card.className = `upgrade-card tier-${tier} ${!canAfford ? 'cant-afford' : ''}`;
+      card.id = `upgrade-${upg.id}`;
+      card.title = `${upg.name} (${tierLabel} Exam Checkpoint)\nCost: ${formatNumber(upg.cost)} knowledge\n${upg.desc}\nClick to answer exam checkpoint question and unlock!`;
 
       card.innerHTML = `
         <span class="upg-icon">${upg.icon}</span>
@@ -1034,6 +1089,18 @@
 
   function buyUpgrade(upg) {
     if ((state.upgradesPurchased || []).includes(upg.id)) return;
+
+    if (state.knowledge < upg.cost) {
+      showToastHint(`You need ${formatNumber(upg.cost)} knowledge to take the checkpoint for ${upg.name}! (You have ${formatNumber(Math.floor(state.knowledge))})`);
+      const card = document.getElementById(`upgrade-${upg.id}`);
+      if (card) {
+        card.classList.remove('shake-card');
+        void card.offsetWidth;
+        card.classList.add('shake-card');
+      }
+      sfx.playFail();
+      return;
+    }
 
     // Trigger the active Quiz Gate Checkpoint!
     openQuizGate({
@@ -1143,6 +1210,17 @@
       if (el) {
         const cost = getBuildingCost(b, state.buildings[b.id] || 0);
         if (state.knowledge < cost) {
+          el.classList.add('cant-afford');
+        } else {
+          el.classList.remove('cant-afford');
+        }
+      }
+    });
+
+    UPGRADES_DEF.forEach(upg => {
+      const el = document.getElementById(`upgrade-${upg.id}`);
+      if (el) {
+        if (state.knowledge < upg.cost) {
           el.classList.add('cant-afford');
         } else {
           el.classList.remove('cant-afford');

@@ -108,19 +108,36 @@
 
       <!-- RIGHT SECTION: UPGRADES & JHU STORE -->
       <section class="store-section">
-        <div class="store-header">
-          <h2>Campus Store & Study Aids</h2>
-          <span class="store-tag">Upgrades & Boosts</span>
+        <!-- PANEL 1: STUDY UPGRADES & BOOSTS -->
+        <div class="store-panel upgrades-panel">
+          <div class="store-header">
+            <div class="store-title-wrap">
+              <span class="store-title-icon">⚡</span>
+              <h2>Study Upgrades</h2>
+            </div>
+            <span class="store-tag">Tools</span>
+          </div>
+          <div class="panel-scroll-area upgrades-scroll-area">
+            <div class="upgrades-shelf" id="upgradesShelf">
+              <!-- Upgrades rendered by JS -->
+            </div>
+          </div>
         </div>
 
-        <!-- CLICK UPGRADES STRIP -->
-        <div class="upgrades-shelf" id="upgradesShelf">
-          <!-- Upgrades rendered by JS -->
-        </div>
-
-        <!-- BUILDINGS / STUDY HELPERS LIST -->
-        <div class="buildings-list" id="buildingsList">
-          <!-- Buildings rendered by JS -->
+        <!-- PANEL 2: CAMPUS STUDY AIDS / AUTOCLICKERS -->
+        <div class="store-panel buildings-panel">
+          <div class="store-header">
+            <div class="store-title-wrap">
+              <span class="store-title-icon">🏛️</span>
+              <h2>Campus Study Aids</h2>
+            </div>
+            <span class="store-tag">Helpers</span>
+          </div>
+          <div class="panel-scroll-area buildings-scroll-area">
+            <div class="buildings-list" id="buildingsList">
+              <!-- Buildings rendered by JS -->
+            </div>
+          </div>
         </div>
       </section>
     </main>
@@ -261,7 +278,7 @@
           <div class="quiz-upgrade-banner">
             <div class="quiz-icon-wrap" id="quizUpgradeIcon">🖊️</div>
             <div class="quiz-upgrade-info">
-              <span class="quiz-target-label">UNLOCKING STUDY UPGRADE</span>
+              <span class="quiz-target-label" id="quizTargetLabel">UNLOCKING STUDY UPGRADE</span>
               <h4 id="quizUpgradeTitle">PaperMate InkJoy Gel Pens</h4>
               <span class="quiz-cost-label" id="quizUpgradeCost">Cost: 150 knowledge</span>
             </div>
@@ -283,20 +300,20 @@
             </div>
 
             <div class="question-content hidden" id="quizQuestionContent">
-              <div class="question-prompt" id="quizQuestionPrompt">Question text will appear here</div>
+              <div class="question-prompt" id="quizQuestionPrompt"></div>
               <div class="quiz-options-grid" id="quizOptionsGrid">
-                <!-- 4 Options rendered by JS -->
+                <!-- Options rendered by JS -->
               </div>
 
               <!-- FEEDBACK BANNER (Reveals on answer) -->
               <div class="quiz-feedback-box hidden" id="quizFeedbackBox">
                 <div class="feedback-header">
-                  <span class="feedback-icon" id="feedbackIcon">✅</span>
-                  <strong id="feedbackTitle">Correct Answer!</strong>
+                  <span class="feedback-icon" id="feedbackIcon"></span>
+                  <strong id="feedbackTitle"></strong>
                 </div>
-                <p class="feedback-explanation" id="feedbackExplanation">Explanation text</p>
+                <p class="feedback-explanation" id="feedbackExplanation"></p>
                 <div class="feedback-actions">
-                  <button id="quizActionBtn" class="btn btn-primary">Continue</button>
+                  <button id="quizActionBtn" class="btn btn-primary" type="button">Continue</button>
                 </div>
               </div>
             </div>
